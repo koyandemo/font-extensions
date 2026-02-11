@@ -21,7 +21,6 @@ export default function Popup() {
   const [fontFamily, setFontFamily] = useState("Arial");
   const [fontStyle, setFontStyle] = useState("normal");
 
-  // Load saved settings on mount
   useEffect(() => {
     chrome.storage.sync.get(["fontFamily", "fontStyle"], (result) => {
       if (result.fontFamily) setFontFamily(result.fontFamily as string);
@@ -29,9 +28,7 @@ export default function Popup() {
     });
   }, []);
 
-  // Apply font changes to the current page
   const applyFontSettings = () => {
-    // Save to chrome storage when Apply button is clicked
     chrome.storage.sync.set({ fontFamily: fontFamily, fontStyle: fontStyle });
 
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
@@ -41,17 +38,15 @@ export default function Popup() {
       const url = new URL(tab.url);
       const hostname = url.hostname;
 
-      // 🚫 Check if domain is blocked
       const isBlocked = DISABLED_DOMAINS.some(
         (domain) => hostname === domain || hostname.endsWith("." + domain)
       );
 
       if (isBlocked) {
         console.log("Font Customizer disabled on this domain:", hostname);
-        return; // STOP here
+        return; 
       }
 
-      // ✅ Allowed → inject font script
       chrome.scripting.executeScript({
         target: { tabId: tab.id },
         func: (family: string, style: string) => {
@@ -87,19 +82,15 @@ export default function Popup() {
     });
   };
 
-  // Save and apply settings when changed
   const handleFontFamilyChange = (value: string) => {
     setFontFamily(value);
-    // No automatic storage - only updates local state
   };
 
   const handleFontStyleChange = (value: string) => {
     setFontStyle(value);
-    // No automatic storage - only updates local state
   };
 
   const resetFontSettings = () => {
-    console.log("110");
     const defaultFamily = "Arial";
     const defaultStyle = "normal";
 
@@ -215,44 +206,3 @@ export default function Popup() {
     </div>
   );
 }
-
-//   const applyFontSettings = () => {
-//     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-//       if (tabs[0]?.id) {
-//         chrome.scripting.executeScript({
-//           target: { tabId: tabs[0].id },
-//           func: (family: string, style: string) => {
-//             const styleId = "custom-font-style";
-//             let styleEl = document.getElementById(styleId);
-
-//             if (!styleEl) {
-//               styleEl = document.createElement("style");
-//               styleEl.id = styleId;
-//               document.head.appendChild(styleEl);
-//             }
-
-//             let fontWeight = "normal";
-//             let fontStyleCSS = "normal";
-
-//             if (style === "bold") {
-//               fontWeight = "bold";
-//             } else if (style === "italic") {
-//               fontStyleCSS = "italic";
-//             } else if (style === "bold-italic") {
-//               fontWeight = "bold";
-//               fontStyleCSS = "italic";
-//             }
-
-//             styleEl.textContent = `
-//               * {
-//                 font-family: '${family}', sans-serif !important;
-//                 font-weight: ${fontWeight} !important;
-//                 font-style: ${fontStyleCSS} !important;
-//               }
-//             `;
-//           },
-//           args: [fontFamily, fontStyle]
-//         });
-//       }
-//     });
-//   };
