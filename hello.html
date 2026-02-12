@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Website → Extension</title>
+  </head>
+  <body>
+    <h1>Talk to Extension</h1>
+
+    <button id="login">Send LOGI</button>
+    <button id="logout">Send LOGOUT</button>
+
+    <script>
+      const EXTENSION_ID = "bhdoofmopajbocpakdgcnellbejjlmcg";
+
+    //   document.getElementById("login").onclick = () => {
+    //     window.postMessage({
+    //       type: "LOGIN",
+    //       token: "abc123",
+    //     });
+    //   };
+
+    //   document.getElementById("logout").onclick = () => {
+    //     window.postMessage({ type: "LOGOUT" });
+    //   };
+
+      console.log(window.location.origin,"26")
+      document.getElementById("login").onclick = () => {
+        chrome.runtime.sendMessage(
+          EXTENSION_ID,
+          {
+            type: "LOGIN",
+            token: "abc123TOKEN"
+          },
+          (response) => {
+            console.log("Response from extension:", response);
+          }
+        );
+      };
+
+      document.getElementById("logout").onclick = () => {
+        chrome.runtime.sendMessage(
+          EXTENSION_ID,
+          { type: "LOGOUT" },
+          (response) => {
+            console.log("Response from extension:", response);
+          }
+        );
+      };
+    </script>
+  </body>
+</html>
