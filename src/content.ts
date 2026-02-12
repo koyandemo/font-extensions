@@ -18,7 +18,6 @@ const customFonts = [
 
 function isDisabledDomain(): boolean {
   const host = window.location.hostname;
-  console.log(host);
   return DISABLED_DOMAINS.some(
     (domain) => host === domain || host.endsWith("." + domain)
   );
