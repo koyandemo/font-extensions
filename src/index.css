@@ -51,7 +51,7 @@
   --sidebar-ring: oklch(0.708 0 0);
 }
 
-a {
+/* a {
   font-weight: 500;
   color: #646cff;
   text-decoration: inherit;
@@ -90,6 +90,14 @@ button:hover {
 button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
+} */
+
+body {
+  margin: 0;
+  display: flex;
+  place-items: center;
+  /* min-width: 320px; */
+  min-height: 50vh;
 }
 
 @media (prefers-color-scheme: light) {

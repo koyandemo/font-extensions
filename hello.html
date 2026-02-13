@@ -12,18 +12,6 @@
     <script>
       const EXTENSION_ID = "bhdoofmopajbocpakdgcnellbejjlmcg";
 
-    //   document.getElementById("login").onclick = () => {
-    //     window.postMessage({
-    //       type: "LOGIN",
-    //       token: "abc123",
-    //     });
-    //   };
-
-    //   document.getElementById("logout").onclick = () => {
-    //     window.postMessage({ type: "LOGOUT" });
-    //   };
-
-      console.log(window.location.origin,"26")
       document.getElementById("login").onclick = () => {
         chrome.runtime.sendMessage(
           EXTENSION_ID,

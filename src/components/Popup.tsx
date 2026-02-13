@@ -1,21 +1,21 @@
 import { useState, useEffect } from "react";
-import { Label } from "../../components/ui/label";
+import { Label } from "./ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../../components/ui/select";
-import { Button } from "../../components/ui/button";
-import { Card, CardContent } from "../../components/ui/card";
-import { Separator } from "../../components/ui/separator";
+} from "./ui/select";
+import { Button } from "./ui/button";
+import { Card, CardContent } from "./ui/card";
+import { Separator } from "./ui/separator";
 import {
   CUSTOM_FONTS,
   DISABLED_DOMAINS,
   FONT_STYLES,
   SYSTEM_FONTS,
-} from "../../lib/utils";
+} from "../lib/utils";
 
 export default function Popup() {
   const [fontFamily, setFontFamily] = useState("Arial");

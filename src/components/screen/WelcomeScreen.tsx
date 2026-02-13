@@ -36,13 +36,13 @@ const WelcomeScreen: React.FC = () => {
       <div className="relative z-10 flex gap-4 px-6 w-full">
         <button
           onClick={openAuthPage}
-          className="flex-1 bg-[#DDA82A]! rounded-full text-white py-3.5 px-4  font-semibold text-base active:scale-95 transition-transform shadow-md"
+          className="flex-1 bg-[#DDA82A]! rounded-full text-white py-2 px-4  font-semibold text-base active:scale-95 transition-transform shadow-md"
         >
           Sign Up
         </button>
         <button
           onClick={openAuthPage}
-          className="flex-1 bg-[#0F172A]! text-white py-3.5 px-4 rounded-full font-semibold text-base active:scale-95 transition-transform shadow-md"
+          className="flex-1 bg-[#0F172A]! text-white py-2 px-4 rounded-full font-semibold text-base active:scale-95 transition-transform shadow-md"
         >
           Login
         </button>

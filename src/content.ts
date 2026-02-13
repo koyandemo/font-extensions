@@ -1,19 +1,136 @@
-window.addEventListener("message", (event) => {
-  if (event.source !== window) return;
+import { DISABLED_DOMAINS, FONT_CONFIG } from "./lib/utils";
 
-  if (event.data.type === "LOGIN") {
-    chrome.runtime.sendMessage({
-      type: "LOGIN",
-      token: event.data.token,
-    });
+const STYLE_ID = "custom-font-style";
+const FONT_FACE_ID = "custom-font-faces";
+
+function removeFontStyle(): void {
+  const styleEl = document.getElementById(STYLE_ID);
+  if (styleEl) {
+    styleEl.remove();
+  }
+}
+
+function isDisabledDomain(): boolean {
+  const host = window.location.hostname;
+  return DISABLED_DOMAINS.some(
+    (domain) => host === domain || host.endsWith("." + domain)
+  );
+}
+
+function loadCustomFonts(): void {
+  if (isDisabledDomain()) return;
+  if (document.getElementById(FONT_FACE_ID)) return;
+
+  const style = document.createElement("style");
+  style.id = FONT_FACE_ID;
+
+  const rules = FONT_CONFIG
+    .filter((font) => font.url)
+    .map(
+      (font) => `
+      @font-face {
+        font-family: '${font.family}';
+        src: url('${font.url}');
+        font-display: swap;
+      }
+    `
+    )
+    .join("");
+
+  style.textContent = rules;
+  document.head.appendChild(style);
+}
+
+function applyFontSettings(): void {
+  if (isDisabledDomain()) return;
+
+  chrome.storage.sync.get(["fontFamily", "fontStyle"], (result) => {
+    const family = result.fontFamily;
+    const styleValue = result.fontStyle;
+
+    // 🚨 RESET CASE (no font selected OR Arial)
+    if (!family || family === "Arial") {
+      removeFontStyle();
+      return;
+    }
+
+    let fontWeight = "normal";
+    let fontStyleCSS = "normal";
+
+    if (styleValue === "bold") {
+      fontWeight = "bold";
+    } else if (styleValue === "italic") {
+      fontStyleCSS = "italic";
+    } else if (styleValue === "bold-italic") {
+      fontWeight = "bold";
+      fontStyleCSS = "italic";
+    }
+
+    let styleEl = document.getElementById(STYLE_ID);
+
+    if (!styleEl) {
+      styleEl = document.createElement("style");
+      styleEl.id = STYLE_ID;
+      document.head.appendChild(styleEl);
+    }
+
+    styleEl.textContent = `
+      * {
+        font-family: '${family}', sans-serif !important;
+        font-weight: ${fontWeight} !important;
+        font-style: ${fontStyleCSS} !important;
+      }
+    `;
+  });
+}
+
+let applyTimeout: number | null = null;
+
+function observeDomChanges(): void {
+  const observer = new MutationObserver(() => {
+    if (applyTimeout) return;
+
+    applyTimeout = window.setTimeout(() => {
+      applyFontSettings();
+      applyTimeout = null;
+    }, 100);
+  });
+
+  observer.observe(document.documentElement, {
+    childList: true,
+    subtree: true,
+  });
+}
+
+function initialize(): void {
+  if (isDisabledDomain()) return;
+
+  loadCustomFonts();
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", applyFontSettings);
+  } else {
+    applyFontSettings();
   }
 
-  if (event.data.type === "LOGOUT") {
-    chrome.runtime.sendMessage({ type: "LOGOUT" });
+  document.fonts?.ready.then(() => {
+    applyFontSettings();
+  });
+
+  observeDomChanges();
+}
+
+initialize();
+
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area === "sync" && (changes.fontFamily || changes.fontStyle)) {
+    applyFontSettings();
   }
 });
 
-
+/**
+ * @old_version
+ */
 // import { DISABLED_DOMAINS } from "./lib/utils";
 
 // const customFonts = [
@@ -27,10 +144,9 @@ window.addEventListener("message", (event) => {
 //   },
 //   {
 //     name: "MyanmarWaso",
-//     url: "https://cvbawrrt6ky4ctvk.public.blob.vercel-storage.com/fonts/BdSkKmrB2aa6AeHgOOM4KW4Kehuvf0da/MyanmarWaso/MyanmarWaso-Regular.ttf"
+//     url: "https://cvbawrrt6ky4ctvk.public.blob.vercel-storage.com/fonts/JRAoUmxfLBEi6t6953Q40l4pAUos67IU/free/koz032/SemiBold.woff2"
 //   }
 // ];
-
 
 // function isDisabledDomain(): boolean {
 //   const host = window.location.hostname;
@@ -60,7 +176,7 @@ window.addEventListener("message", (event) => {
 //   }
 
 //   style.textContent = fontFaceRules;
-  
+
 //   const head = document.head;
 //   if (head) {
 //     head.appendChild(style);
@@ -159,5 +275,3 @@ window.addEventListener("message", (event) => {
 //     applyFontSettings();
 //   }
 // });
-
-
