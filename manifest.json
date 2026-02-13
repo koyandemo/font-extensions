@@ -13,7 +13,7 @@
     "permissions": ["storage", "activeTab", "scripting","tabs"],
     "content_scripts": [
       {
-        "matches": ["http://127.0.0.1:5500/*", "https://mmfontshub.app/*"],
+        "matches": ["<all_urls>"],
         "js": ["src/content.ts"],
          "run_at": "document_start"
       }

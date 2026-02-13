@@ -39,9 +39,6 @@ const FontList: React.FC = () => {
     document.head.appendChild(style);
   }, []);
 
-  /* -------------------------------------------------- */
-  /* 🔥 Load saved settings */
-  /* -------------------------------------------------- */
   useEffect(() => {
     chrome.storage.sync.get(
       [STORAGE_KEYS.id, STORAGE_KEYS.family, STORAGE_KEYS.style],
@@ -65,9 +62,6 @@ const FontList: React.FC = () => {
     );
   }, []);
 
-  /* -------------------------------------------------- */
-  /* 🔥 Inject font into active tab */
-  /* -------------------------------------------------- */
   const injectFont = (family: string, style: string) => {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       const tab = tabs[0];
@@ -155,7 +149,6 @@ const FontList: React.FC = () => {
 
   return (
     <div className="flex flex-col h-full bg-white">
-      {/* SEARCH */}
       <div className="px-5 py-4 sticky top-0 bg-white z-10">
         <div className="relative">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -168,7 +161,6 @@ const FontList: React.FC = () => {
         </div>
       </div>
 
-      {/* FONT LIST */}
       <div className="flex-1 overflow-y-auto pb-32">
         {selectedFont && selectedFont.id === appliedFontId && (
           <div className="px-6 py-3 bg-[#fef3c7] border-b border-yellow-100">
