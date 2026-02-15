@@ -1,9 +1,9 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
-export const DISABLED_DOMAINS = [
-  "mmfontshub.app",
-];
+export const MAIN_WEBSITE="http://127.0.0.1:5500/domain.html"
+
+export const DISABLED_DOMAINS = ["mmfontshub.app"];
 
 export const DEFAULT_STYLE = "normal";
 
@@ -18,7 +18,14 @@ export const STORAGE_KEYS = {
   id: "fontId",
   family: "fontFamily",
   style: "fontStyle",
+  size: "fontSize",
 };
+
+export const FONT_SIZES = [
+  { label: "Small", value: "small", scale: 0.85 },
+  { label: "Medium", value: "medium", scale: 1 },
+  { label: "Large", value: "large", scale: 1.15 },
+];
 
 export const FONT_CONFIG = [
   {

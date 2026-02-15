@@ -196,3 +196,11 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+html {
+  font-size: 1.15em !important;
+}
+
+/* *:not(i):not(svg):not(code):not(pre) {
+  font-family: "${family}", sans-serif !important;
+} */

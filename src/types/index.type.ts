@@ -9,7 +9,7 @@ export type ViewT = "LIST" | "SETTINGS" | "EMPTY";
 
 export interface UserPreferencesT {
   defaultFont: string;
-  fontSize: "Small" | "Medium" | "Large";
+  fontSize: string;
   autoApply: boolean;
   rememberPerSite: boolean;
 }

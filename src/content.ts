@@ -1,13 +1,17 @@
-import { DISABLED_DOMAINS, FONT_CONFIG } from "./lib/utils";
+import {
+  DISABLED_DOMAINS,
+  FONT_CONFIG,
+  STORAGE_KEYS,
+  DEFAULT_STYLE,
+} from "./lib/utils";
 
-const STYLE_ID = "custom-font-style";
-const FONT_FACE_ID = "custom-font-faces";
+const STYLE_ID = "fc-custom-style";
+const FONT_FACE_ID = "fc-font-faces";
+
 
 function removeFontStyle(): void {
   const styleEl = document.getElementById(STYLE_ID);
-  if (styleEl) {
-    styleEl.remove();
-  }
+  if (styleEl) styleEl.remove();
 }
 
 function isDisabledDomain(): boolean {
@@ -24,8 +28,7 @@ function loadCustomFonts(): void {
   const style = document.createElement("style");
   style.id = FONT_FACE_ID;
 
-  const rules = FONT_CONFIG
-    .filter((font) => font.url)
+  const rules = FONT_CONFIG.filter((font) => font.url)
     .map(
       (font) => `
       @font-face {
@@ -41,49 +44,85 @@ function loadCustomFonts(): void {
   document.head.appendChild(style);
 }
 
+/**
+ * Convert font style
+ */
+function getFontStyle(styleValue: string) {
+  let fontWeight = "normal";
+  let fontStyle = "normal";
+
+  if (styleValue === "bold") fontWeight = "bold";
+  else if (styleValue === "italic") fontStyle = "italic";
+  else if (styleValue === "bold-italic") {
+    fontWeight = "bold";
+    fontStyle = "italic";
+  }
+
+  return { fontWeight, fontStyle };
+}
+
+/**
+ * Convert font size → scale
+ */
+function getFontScale(size: string): number {
+  switch (size) {
+    case "small":
+      return 0.85;
+    case "large":
+      return 1.15;
+    case "medium":
+    default:
+      return 1;
+  }
+}
+
+/**
+ * Apply font + size
+ */
 function applyFontSettings(): void {
   if (isDisabledDomain()) return;
 
-  chrome.storage.sync.get(["fontFamily", "fontStyle"], (result) => {
-    const family = result.fontFamily;
-    const styleValue = result.fontStyle;
+  chrome.storage.sync.get(
+    [STORAGE_KEYS.family, STORAGE_KEYS.style, STORAGE_KEYS.size],
+    (result) => {
+      const family = result[STORAGE_KEYS.family];
+      const styleValue = result[STORAGE_KEYS.style] || DEFAULT_STYLE;
+      const sizeValue = result[STORAGE_KEYS.size] || "medium";
 
-    // 🚨 RESET CASE (no font selected OR Arial)
-    if (!family || family === "Arial") {
-      removeFontStyle();
-      return;
-    }
-
-    let fontWeight = "normal";
-    let fontStyleCSS = "normal";
-
-    if (styleValue === "bold") {
-      fontWeight = "bold";
-    } else if (styleValue === "italic") {
-      fontStyleCSS = "italic";
-    } else if (styleValue === "bold-italic") {
-      fontWeight = "bold";
-      fontStyleCSS = "italic";
-    }
-
-    let styleEl = document.getElementById(STYLE_ID);
-
-    if (!styleEl) {
-      styleEl = document.createElement("style");
-      styleEl.id = STYLE_ID;
-      document.head.appendChild(styleEl);
-    }
-
-    styleEl.textContent = `
-      * {
-        font-family: '${family}', sans-serif !important;
-        font-weight: ${fontWeight} !important;
-        font-style: ${fontStyleCSS} !important;
+      if (!family || family === "Arial") {
+        removeFontStyle();
+        return;
       }
-    `;
-  });
+
+      const { fontWeight, fontStyle } = getFontStyle(styleValue as string);
+      const scale = getFontScale(sizeValue as string);
+
+      let styleEl = document.getElementById(STYLE_ID);
+
+      if (!styleEl) {
+        styleEl = document.createElement("style");
+        styleEl.id = STYLE_ID;
+        document.head.appendChild(styleEl);
+      }
+
+      styleEl.textContent = `
+        html {
+          font-size: ${scale}em !important;
+        }
+
+        * {
+          font-family: '${family}', sans-serif !important;
+          font-weight: ${fontWeight} !important;
+          font-style: ${fontStyle} !important;
+        }
+      `;
+    }
+  );
 }
 
+/**
+ * Observe DOM changes (for SPA like React sites)
+ */
 let applyTimeout: number | null = null;
 
 function observeDomChanges(): void {
@@ -101,6 +140,7 @@ function observeDomChanges(): void {
     subtree: true,
   });
 }
+
 
 function initialize(): void {
   if (isDisabledDomain()) return;
@@ -122,31 +162,35 @@ function initialize(): void {
 
 initialize();
 
+
 chrome.storage.onChanged.addListener((changes, area) => {
-  if (area === "sync" && (changes.fontFamily || changes.fontStyle)) {
+  if (
+    area === "sync" &&
+    (changes[STORAGE_KEYS.family] ||
+      changes[STORAGE_KEYS.style] ||
+      changes[STORAGE_KEYS.size])
+  ) {
     applyFontSettings();
   }
 });
 
+
+
 /**
  * @old_version
  */
-// import { DISABLED_DOMAINS } from "./lib/utils";
 
-// const customFonts = [
-//   {
-//     name: "MyanmarJojarPro",
-//     url: "https://cvbawrrt6ky4ctvk.public.blob.vercel-storage.com/fonts/k0zwZFlUTtg2DOb2OFGoVERr1O5d1RLP/MyanmarJojarPro/MyanmarJojarPro-Regular.ttf"
-//   },
-//   {
-//     name: "MyanmarKoz",
-//     url: "https://cvbawrrt6ky4ctvk.public.blob.vercel-storage.com/fonts/JRAoUmxfLBEi6t6953Q40l4pAUos67IU/koz001/koz001_regular.ttf"
-//   },
-//   {
-//     name: "MyanmarWaso",
-//     url: "https://cvbawrrt6ky4ctvk.public.blob.vercel-storage.com/fonts/JRAoUmxfLBEi6t6953Q40l4pAUos67IU/free/koz032/SemiBold.woff2"
+// import { DISABLED_DOMAINS, FONT_CONFIG } from "./lib/utils";
+
+// const STYLE_ID = "custom-font-style";
+// const FONT_FACE_ID = "custom-font-faces";
+
+// function removeFontStyle(): void {
+//   const styleEl = document.getElementById(STYLE_ID);
+//   if (styleEl) {
+//     styleEl.remove();
 //   }
-// ];
+// }
 
 // function isDisabledDomain(): boolean {
 //   const host = window.location.hostname;
@@ -156,45 +200,41 @@ chrome.storage.onChanged.addListener((changes, area) => {
 // }
 
 // function loadCustomFonts(): void {
-//   if (isDisabledDomain()) {
-//     return;
-//   }
-
-//   const styleId = "custom-font-faces";
-//   const existingStyle = document.getElementById(styleId);
-//   if (existingStyle) {
-//     return;
-//   }
+//   if (isDisabledDomain()) return;
+//   if (document.getElementById(FONT_FACE_ID)) return;
 
 //   const style = document.createElement("style");
-//   style.id = styleId;
+//   style.id = FONT_FACE_ID;
 
-//   let fontFaceRules = "";
-//   for (let i = 0; i < customFonts.length; i++) {
-//     const font = customFonts[i];
-//     fontFaceRules += "@font-face { font-family: '" + font.name + "'; src: url('" + font.url + "'); font-weight: normal; font-style: normal; font-display: swap; } ";
-//   }
+//   const rules = FONT_CONFIG
+//     .filter((font) => font.url)
+//     .map(
+//       (font) => `
+//       @font-face {
+//         font-family: '${font.family}';
+//         src: url('${font.url}');
+//         font-display: swap;
+//       }
+//     `
+//     )
+//     .join("");
 
-//   style.textContent = fontFaceRules;
-
-//   const head = document.head;
-//   if (head) {
-//     head.appendChild(style);
-//   }
+//   style.textContent = rules;
+//   document.head.appendChild(style);
 // }
 
 // function applyFontSettings(): void {
-//   if (isDisabledDomain()) {
-//     return;
-//   }
+//   if (isDisabledDomain()) return;
 
 //   chrome.storage.sync.get(["fontFamily", "fontStyle"], (result) => {
-//     if (!result.fontFamily && !result.fontStyle) {
+//     const family = result.fontFamily;
+//     const styleValue = result.fontStyle;
+
+//     // 🚨 RESET CASE (no font selected OR Arial)
+//     if (!family || family === "Arial") {
+//       removeFontStyle();
 //       return;
 //     }
-
-//     const family = result.fontFamily || "Arial";
-//     const styleValue = result.fontStyle || "normal";
 
 //     let fontWeight = "normal";
 //     let fontStyleCSS = "normal";
@@ -208,21 +248,21 @@ chrome.storage.onChanged.addListener((changes, area) => {
 //       fontStyleCSS = "italic";
 //     }
 
-//     const styleId = "custom-font-style";
-//     let styleEl = document.getElementById(styleId);
+//     let styleEl = document.getElementById(STYLE_ID);
 
 //     if (!styleEl) {
 //       styleEl = document.createElement("style");
-//       styleEl.id = styleId;
-//       const head = document.head;
-//       if (head) {
-//         head.appendChild(styleEl);
-//       }
+//       styleEl.id = STYLE_ID;
+//       document.head.appendChild(styleEl);
 //     }
 
-//     const cssRules = "* { font-family: '" + family + "', sans-serif !important; font-weight: " + fontWeight + " !important; font-style: " + fontStyleCSS + " !important; }";
-
-//     styleEl.textContent = cssRules;
+//     styleEl.textContent = `
+//       * {
+//         font-family: '${family}', sans-serif !important;
+//         font-weight: ${fontWeight} !important;
+//         font-style: ${fontStyleCSS} !important;
+//       }
+//     `;
 //   });
 // }
 
@@ -230,9 +270,7 @@ chrome.storage.onChanged.addListener((changes, area) => {
 
 // function observeDomChanges(): void {
 //   const observer = new MutationObserver(() => {
-//     if (applyTimeout) {
-//       return;
-//     }
+//     if (applyTimeout) return;
 
 //     applyTimeout = window.setTimeout(() => {
 //       applyFontSettings();
@@ -242,14 +280,12 @@ chrome.storage.onChanged.addListener((changes, area) => {
 
 //   observer.observe(document.documentElement, {
 //     childList: true,
-//     subtree: true
+//     subtree: true,
 //   });
 // }
 
 // function initialize(): void {
-//   if (isDisabledDomain()) {
-//     return;
-//   }
+//   if (isDisabledDomain()) return;
 
 //   loadCustomFonts();
 
@@ -259,11 +295,9 @@ chrome.storage.onChanged.addListener((changes, area) => {
 //     applyFontSettings();
 //   }
 
-//   if (document.fonts) {
-//     document.fonts.ready.then(() => {
-//       applyFontSettings();
-//     });
-//   }
+//   document.fonts?.ready.then(() => {
+//     applyFontSettings();
+//   });
 
 //   observeDomChanges();
 // }

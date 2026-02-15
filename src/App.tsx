@@ -135,6 +135,7 @@
 import { useEffect, useState } from "react";
 import MainScreen from "./components/screen/MainScreen";
 import WelcomeScreen from "./components/screen/WelcomeScreen";
+import { MAIN_WEBSITE } from "./lib/utils";
 
 function App() {
   const [token, setToken] = useState<string | null>(null);
@@ -161,23 +162,23 @@ function App() {
     };
   }, []);
 
-  // const handleLogin = (newToken: string) => {
-  //   chrome.storage.local.set({ token: newToken });
-  //   setToken(newToken);
-  // };
-
   const handleLogout = () => {
-    chrome.storage.local.remove("token");
-    setToken(null);
+    // chrome.storage.local.remove("token");
+    // setToken(null);
+    if (chrome?.tabs) {
+      chrome.tabs.create({ url: `${MAIN_WEBSITE}?logout=true` }, () => {
+        window.close();
+      });
+    }
   };
 
   if (loading) return <div>Loading...</div>;
 
   return (
     <div className="w-[300px]">
-      {token ?  <MainScreen onLogout={handleLogout} /> : <WelcomeScreen />}
+      {token ? <MainScreen onLogout={handleLogout} /> : <WelcomeScreen />}
     </div>
-  )
+  );
 }
 
 export default App;

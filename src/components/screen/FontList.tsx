@@ -8,13 +8,31 @@ import {
   FONT_FACE_ID,
   STORAGE_KEYS,
 } from "../../lib/utils";
+import { FontService } from "../../lib/font.service";
 
 const FontList: React.FC = () => {
   const [search, setSearch] = useState("");
   const [selectedFont, setSelectedFont] = useState<any | null>(null);
   const [appliedFontId, setAppliedFontId] = useState<string | null>(null);
   const [fontStyle, setFontStyle] = useState<string>(DEFAULT_STYLE);
+  const [fontSize, setFontSize] = useState("medium");
   const [isSuccess, setIsSuccess] = useState(false);
+
+  useEffect(() => {
+    chrome.storage.sync.get(
+      [
+        STORAGE_KEYS.id,
+        STORAGE_KEYS.family,
+        STORAGE_KEYS.style,
+        STORAGE_KEYS.size, // ✅
+      ],
+      (res: any) => {
+        if (res[STORAGE_KEYS.size]) {
+          setFontSize(res[STORAGE_KEYS.size]);
+        }
+      }
+    );
+  }, []);
 
   useEffect(() => {
     if (document.getElementById(FONT_FACE_ID)) return;
@@ -22,8 +40,7 @@ const FontList: React.FC = () => {
     const style = document.createElement("style");
     style.id = FONT_FACE_ID;
 
-    const rules = FONT_CONFIG
-      .filter((font) => font.url)
+    const rules = FONT_CONFIG.filter((font) => font.url)
       .map(
         (font) => `
         @font-face {
@@ -46,9 +63,7 @@ const FontList: React.FC = () => {
         if (res[STORAGE_KEYS.id]) {
           setAppliedFontId(res[STORAGE_KEYS.id]);
 
-          const found = FONT_CONFIG.find(
-            (f) => f.id === res[STORAGE_KEYS.id]
-          );
+          const found = FONT_CONFIG.find((f) => f.id === res[STORAGE_KEYS.id]);
           setSelectedFont(found || null);
         } else {
           const arial = FONT_CONFIG.find((f) => f.family === "Arial");
@@ -115,9 +130,10 @@ const FontList: React.FC = () => {
       [STORAGE_KEYS.id]: font.id,
       [STORAGE_KEYS.family]: font.family,
       [STORAGE_KEYS.style]: fontStyle,
+      [STORAGE_KEYS.size]: fontSize, // ✅
     });
 
-    injectFont(font.family, fontStyle);
+    FontService.applyFont(font.family, fontStyle, fontSize);
 
     setAppliedFontId(font.id);
     setSelectedFont(font);
@@ -127,16 +143,10 @@ const FontList: React.FC = () => {
   };
 
   const handleReset = () => {
+    FontService.resetFont();
+
     const arial = FONT_CONFIG.find((f) => f.family === "Arial");
     if (!arial) return;
-
-    chrome.storage.sync.set({
-      [STORAGE_KEYS.id]: arial.id,
-      [STORAGE_KEYS.family]: arial.family,
-      [STORAGE_KEYS.style]: DEFAULT_STYLE,
-    });
-
-    injectFont(arial.family, DEFAULT_STYLE);
 
     setAppliedFontId(arial.id);
     setSelectedFont(arial);
@@ -188,16 +198,14 @@ const FontList: React.FC = () => {
               }`}
             >
               <div className="flex flex-col items-start gap-1 text-left">
-                <div className="text-base font-bold text-[#1e293b]">
+                <div className="text-[14px]! font-bold text-[#1e293b]">
                   {font.name}
                 </div>
                 <p
                   className="text-xs text-muted-foreground"
                   style={{
                     fontFamily: `'${font.family}', sans-serif`,
-                    fontWeight: fontStyle.includes("bold")
-                      ? "bold"
-                      : "normal",
+                    fontWeight: fontStyle.includes("bold") ? "bold" : "normal",
                     fontStyle: fontStyle.includes("italic")
                       ? "italic"
                       : "normal",

@@ -22,7 +22,7 @@ const MainScreen: React.FC<MainScreenProps> = ({ onLogout }) => {
       return <EmptyState />;
     }
 
-    return <FontList />; // 🔥 no props
+    return <FontList />; 
   };
 
   return (
