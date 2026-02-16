@@ -12,17 +12,12 @@ const WelcomeScreen: React.FC = () => {
 
   return (
     <div className="relative flex flex-col gap-10 items-center justify-between h-full w-full border-none! bg-white pb-12">
-      {/* Yellow Gradient Background Section */}
       <div className="absolute top-0 left-0 right-0 w-full h-1/2 bg-linear-to-b from-[#FDE68A] to-white z-0" />
-
-      {/* Content Container */}
       <div className="relative z-10 flex flex-col items-center pt-20 px-6  text-center w-full">
-        {/* Stylized 'M' Logo */}
         <div className="mb-10">
           <img alt="logo" width={53.61} height={49} src="/logo.png" />
         </div>
 
-        {/* Text Section */}
         <p className="text-[20px] font-bold text-[#0F172A] mb-3 tracking-tight">
           Welcome to Myanmar Font Hub
         </p>
@@ -31,7 +26,6 @@ const WelcomeScreen: React.FC = () => {
         </p>
       </div>
 
-      {/* Buttons Section */}
       <div className="relative z-10 flex gap-4 px-6 w-full">
         <button
           onClick={openAuthPage}
