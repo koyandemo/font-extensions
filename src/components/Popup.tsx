@@ -1,208 +1,219 @@
-import { useState, useEffect } from "react";
-import { Label } from "./ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "./ui/select";
-import { Button } from "./ui/button";
-import { Card, CardContent } from "./ui/card";
-import { Separator } from "./ui/separator";
-import {
-  CUSTOM_FONTS,
-  DISABLED_DOMAINS,
-  FONT_STYLES,
-  SYSTEM_FONTS,
-} from "../lib/utils";
 
-export default function Popup() {
-  const [fontFamily, setFontFamily] = useState("Arial");
-  const [fontStyle, setFontStyle] = useState("normal");
+const Popup = () => {
+  return <div>Popup</div>;
+};
 
-  useEffect(() => {
-    chrome.storage.sync.get(["fontFamily", "fontStyle"], (result) => {
-      if (result.fontFamily) setFontFamily(result.fontFamily as string);
-      if (result.fontStyle) setFontStyle(result.fontStyle as string);
-    });
-  }, []);
+export default Popup;
 
-  const applyFontSettings = () => {
-    chrome.storage.sync.set({ fontFamily: fontFamily, fontStyle: fontStyle });
+/**
+ * @old_version
+ */
 
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      const tab = tabs[0];
-      if (!tab?.id || !tab.url) return;
+// import { useState, useEffect } from "react";
+// import { Label } from "./ui/label";
+// import {
+//   Select,
+//   SelectContent,
+//   SelectItem,
+//   SelectTrigger,
+//   SelectValue,
+// } from "./ui/select";
+// import { Button } from "./ui/button";
+// import { Card, CardContent } from "./ui/card";
+// import { Separator } from "./ui/separator";
+// import {
+//   CUSTOM_FONTS,
+//   DISABLED_DOMAINS,
+//   FONT_STYLES,
+//   SYSTEM_FONTS,
+// } from "../lib/utils";
 
-      const url = new URL(tab.url);
-      const hostname = url.hostname;
+// export default function Popup() {
+//   const [fontFamily, setFontFamily] = useState("Arial");
+//   const [fontStyle, setFontStyle] = useState("normal");
 
-      const isBlocked = DISABLED_DOMAINS.some(
-        (domain) => hostname === domain || hostname.endsWith("." + domain)
-      );
+//   useEffect(() => {
+//     chrome.storage.sync.get(["fontFamily", "fontStyle"], (result) => {
+//       if (result.fontFamily) setFontFamily(result.fontFamily as string);
+//       if (result.fontStyle) setFontStyle(result.fontStyle as string);
+//     });
+//   }, []);
 
-      if (isBlocked) {
-        console.log("Font Customizer disabled on this domain:", hostname);
-        return; 
-      }
+//   const applyFontSettings = () => {
+//     chrome.storage.sync.set({ fontFamily: fontFamily, fontStyle: fontStyle });
 
-      chrome.scripting.executeScript({
-        target: { tabId: tab.id },
-        func: (family: string, style: string) => {
-          const styleId = "custom-font-style";
-          let styleEl = document.getElementById(styleId);
+//     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+//       const tab = tabs[0];
+//       if (!tab?.id || !tab.url) return;
 
-          if (!styleEl) {
-            styleEl = document.createElement("style");
-            styleEl.id = styleId;
-            document.head.appendChild(styleEl);
-          }
+//       const url = new URL(tab.url);
+//       const hostname = url.hostname;
 
-          let fontWeight = "normal";
-          let fontStyleCSS = "normal";
+//       const isBlocked = DISABLED_DOMAINS.some(
+//         (domain) => hostname === domain || hostname.endsWith("." + domain)
+//       );
 
-          if (style === "bold") fontWeight = "bold";
-          else if (style === "italic") fontStyleCSS = "italic";
-          else if (style === "bold-italic") {
-            fontWeight = "bold";
-            fontStyleCSS = "italic";
-          }
+//       if (isBlocked) {
+//         console.log("Font Customizer disabled on this domain:", hostname);
+//         return;
+//       }
 
-          styleEl.textContent = `
-            * {
-              font-family: '${family}', sans-serif !important;
-              font-weight: ${fontWeight} !important;
-              font-style: ${fontStyleCSS} !important;
-            }
-          `;
-        },
-        args: [fontFamily, fontStyle],
-      });
-    });
-  };
+//       chrome.scripting.executeScript({
+//         target: { tabId: tab.id },
+//         func: (family: string, style: string) => {
+//           const styleId = "custom-font-style";
+//           let styleEl = document.getElementById(styleId);
 
-  const handleFontFamilyChange = (value: string) => {
-    setFontFamily(value);
-  };
+//           if (!styleEl) {
+//             styleEl = document.createElement("style");
+//             styleEl.id = styleId;
+//             document.head.appendChild(styleEl);
+//           }
 
-  const handleFontStyleChange = (value: string) => {
-    setFontStyle(value);
-  };
+//           let fontWeight = "normal";
+//           let fontStyleCSS = "normal";
 
-  const resetFontSettings = () => {
-    const defaultFamily = "Arial";
-    const defaultStyle = "normal";
+//           if (style === "bold") fontWeight = "bold";
+//           else if (style === "italic") fontStyleCSS = "italic";
+//           else if (style === "bold-italic") {
+//             fontWeight = "bold";
+//             fontStyleCSS = "italic";
+//           }
 
-    setFontFamily(defaultFamily);
-    setFontStyle(defaultStyle);
+//           styleEl.textContent = `
+//             * {
+//               font-family: '${family}', sans-serif !important;
+//               font-weight: ${fontWeight} !important;
+//               font-style: ${fontStyleCSS} !important;
+//             }
+//           `;
+//         },
+//         args: [fontFamily, fontStyle],
+//       });
+//     });
+//   };
 
-    chrome.storage.sync.remove(["fontFamily", "fontStyle"]);
+//   const handleFontFamilyChange = (value: string) => {
+//     setFontFamily(value);
+//   };
 
-    // Also remove style from page
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      if (!tabs[0]?.id) return;
+//   const handleFontStyleChange = (value: string) => {
+//     setFontStyle(value);
+//   };
 
-      chrome.scripting.executeScript({
-        target: { tabId: tabs[0].id },
-        func: () => {
-          const styleEl = document.getElementById("custom-font-style");
-          if (styleEl) styleEl.remove();
-        },
-      });
-    });
-  };
+//   const resetFontSettings = () => {
+//     const defaultFamily = "Arial";
+//     const defaultStyle = "normal";
 
-  return (
-    <div className="w-[320px] p-5 bg-background">
-      <h2 className="text-lg font-semibold mb-5 text-foreground">
-        Font Customizer
-      </h2>
+//     setFontFamily(defaultFamily);
+//     setFontStyle(defaultStyle);
 
-      <div className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="font-family" className="text-sm font-medium">
-            Font Family
-          </Label>
-          <Select value={fontFamily} onValueChange={handleFontFamilyChange}>
-            <SelectTrigger id="font-family" className="w-full text-white">
-              <SelectValue placeholder="Select font family" />
-            </SelectTrigger>
-            <SelectContent>
-              <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
-                Myanmar Fonts
-              </div>
-              {CUSTOM_FONTS.map((font) => (
-                <SelectItem key={font.value} value={font.value}>
-                  {font.name}
-                </SelectItem>
-              ))}
+//     chrome.storage.sync.remove(["fontFamily", "fontStyle"]);
 
-              <Separator className="my-2" />
+//     // Also remove style from page
+//     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+//       if (!tabs[0]?.id) return;
 
-              <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
-                System Fonts
-              </div>
-              {SYSTEM_FONTS.map((font) => (
-                <SelectItem key={font} value={font}>
-                  {font}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+//       chrome.scripting.executeScript({
+//         target: { tabId: tabs[0].id },
+//         func: () => {
+//           const styleEl = document.getElementById("custom-font-style");
+//           if (styleEl) styleEl.remove();
+//         },
+//       });
+//     });
+//   };
 
-        <div className="space-y-2">
-          <Label htmlFor="font-style" className="text-sm font-medium">
-            Font Style
-          </Label>
-          <Select value={fontStyle} onValueChange={handleFontStyleChange}>
-            <SelectTrigger id="font-style" className="w-full text-white">
-              <SelectValue placeholder="Select font style" />
-            </SelectTrigger>
-            <SelectContent>
-              {FONT_STYLES.map((style) => (
-                <SelectItem key={style.value} value={style.value}>
-                  {style.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+//   return (
+//     <div className="w-[320px] p-5 bg-background">
+//       <h2 className="text-lg font-semibold mb-5 text-foreground">
+//         Font Customizer
+//       </h2>
 
-        <Button onClick={applyFontSettings} className="w-full">
-          Apply to Current Page
-        </Button>
+//       <div className="space-y-4">
+//         <div className="space-y-2">
+//           <Label htmlFor="font-family" className="text-sm font-medium">
+//             Font Family
+//           </Label>
+//           <Select value={fontFamily} onValueChange={handleFontFamilyChange}>
+//             <SelectTrigger id="font-family" className="w-full text-white">
+//               <SelectValue placeholder="Select font family" />
+//             </SelectTrigger>
+//             <SelectContent>
+//               <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
+//                 Myanmar Fonts
+//               </div>
+//               {CUSTOM_FONTS.map((font) => (
+//                 <SelectItem key={font.value} value={font.value}>
+//                   {font.name}
+//                 </SelectItem>
+//               ))}
 
-        <Button onClick={resetFontSettings} className="w-full">
-          Reset to Default
-        </Button>
+//               <Separator className="my-2" />
 
-        <Card>
-          <CardContent className="pt-4">
-            <p
-              className="text-xs text-muted-foreground"
-              style={{
-                fontFamily: `'${fontFamily}', sans-serif`,
-                fontWeight: fontStyle.includes("bold") ? "bold" : "normal",
-                fontStyle: fontStyle.includes("italic") ? "italic" : "normal",
-              }}
-            >
-              Preview: The quick brown fox jumps over the lazy dog.
-            </p>
-            <p
-              className="text-sm mt-2"
-              style={{
-                fontFamily: `'${fontFamily}', sans-serif`,
-                fontWeight: fontStyle.includes("bold") ? "bold" : "normal",
-                fontStyle: fontStyle.includes("italic") ? "italic" : "normal",
-              }}
-            >
-              မြန်မာစာ ဥပမာ
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
-  );
-}
+//               <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
+//                 System Fonts
+//               </div>
+//               {SYSTEM_FONTS.map((font) => (
+//                 <SelectItem key={font} value={font}>
+//                   {font}
+//                 </SelectItem>
+//               ))}
+//             </SelectContent>
+//           </Select>
+//         </div>
+
+//         <div className="space-y-2">
+//           <Label htmlFor="font-style" className="text-sm font-medium">
+//             Font Style
+//           </Label>
+//           <Select value={fontStyle} onValueChange={handleFontStyleChange}>
+//             <SelectTrigger id="font-style" className="w-full text-white">
+//               <SelectValue placeholder="Select font style" />
+//             </SelectTrigger>
+//             <SelectContent>
+//               {FONT_STYLES.map((style) => (
+//                 <SelectItem key={style.value} value={style.value}>
+//                   {style.label}
+//                 </SelectItem>
+//               ))}
+//             </SelectContent>
+//           </Select>
+//         </div>
+
+//         <Button onClick={applyFontSettings} className="w-full">
+//           Apply to Current Page
+//         </Button>
+
+//         <Button onClick={resetFontSettings} className="w-full">
+//           Reset to Default
+//         </Button>
+
+//         <Card>
+//           <CardContent className="pt-4">
+//             <p
+//               className="text-xs text-muted-foreground"
+//               style={{
+//                 fontFamily: `'${fontFamily}', sans-serif`,
+//                 fontWeight: fontStyle.includes("bold") ? "bold" : "normal",
+//                 fontStyle: fontStyle.includes("italic") ? "italic" : "normal",
+//               }}
+//             >
+//               Preview: The quick brown fox jumps over the lazy dog.
+//             </p>
+//             <p
+//               className="text-sm mt-2"
+//               style={{
+//                 fontFamily: `'${fontFamily}', sans-serif`,
+//                 fontWeight: fontStyle.includes("bold") ? "bold" : "normal",
+//                 fontStyle: fontStyle.includes("italic") ? "italic" : "normal",
+//               }}
+//             >
+//               မြန်မာစာ ဥပမာ
+//             </p>
+//           </CardContent>
+//         </Card>
+//       </div>
+//     </div>
+//   );
+// }

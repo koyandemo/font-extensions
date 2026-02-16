@@ -11,6 +11,7 @@ interface SettingsScreenProps {
 const DEFAULT_SIZE = "medium";
 
 const SettingsScreen: React.FC<SettingsScreenProps> = ({ onLogout }) => {
+
   const [prefs, setPrefs] = useState<UserPreferencesT|any>({
     defaultFont: "None",
     fontSize: DEFAULT_SIZE,
@@ -18,9 +19,6 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ onLogout }) => {
     rememberPerSite: true,
   });
 
-  /**
-   * Load from storage
-   */
   useEffect(() => {
     chrome.storage.sync.get([STORAGE_KEYS.size], (res) => {
       const size = res[STORAGE_KEYS.size] || DEFAULT_SIZE;
@@ -32,9 +30,6 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ onLogout }) => {
     });
   }, []);
 
-  /**
-   * Sync when reset happens (FontList)
-   */
   useEffect(() => {
     const listener = (changes: any, area: string) => {
       if (area === "sync" && changes[STORAGE_KEYS.size]) {
@@ -108,7 +103,6 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ onLogout }) => {
   return (
     <div className="h-full bg-gray-50 flex flex-col overflow-y-auto pb-10">
       <div className="p-5 space-y-8">
-        {/* Font Preferences */}
         <section>
           <h3 className="text-sm font-bold text-gray-800 mb-4">
             Font Preferences
@@ -134,7 +128,6 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ onLogout }) => {
                 </select>
               </div>
 
-              {/* 🔥 Reset button */}
               <button
                 onClick={handleResetFontSize}
                 className="mt-2 text-xs text-yellow-600"
@@ -145,7 +138,6 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ onLogout }) => {
           </div>
         </section>
 
-        {/* Auto-Apply Settings */}
         <section>
           <h3 className="text-sm font-bold text-gray-800 mb-4">
             Auto-Apply Settings
